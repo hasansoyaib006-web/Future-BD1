@@ -1,0 +1,268 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Future BD Dashboard</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f3f6fc;font-family:Arial;color:#172554}
+header{background:#123b8b;color:white;padding:20px}
+header h2{margin:0}
+header p{margin:6px 0 0;color:#dbeafe}
+.container{max-width:950px;margin:auto;padding:18px}
+.card{background:white;padding:20px;border-radius:15px;margin:14px 0;box-shadow:0 3px 14px #00000009}
+.balance{background:linear-gradient(120deg,#123b8b,#2879df);color:white}
+.balance h1{font-size:34px;margin:10px 0}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.stat{background:white;padding:17px;border-radius:12px}
+.stat h2{margin:8px 0;color:#1765ce}
+.tasks{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.task{background:white;padding:18px;border-radius:13px}
+button{background:#1765ce;color:white;border:0;padding:11px 15px;border-radius:8px;cursor:pointer}
+button:disabled{background:#94a3b8}
+input{width:100%;padding:13px;margin:9px 0;border:1px solid #ccd5e4;border-radius:8px}
+.auth{max-width:420px;margin:35px auto;padding:20px}
+.small{font-size:13px;color:#64748b}
+nav{display:flex;gap:10px;flex-wrap:wrap;margin:15px 0}
+nav button{background:#e1edff;color:#123b8b}
+.history{padding:12px 0;border-bottom:1px solid #e5e7eb}
+#dashboard{display:none}
+#message{color:#dc2626;font-size:13px}
+@media(max-width:500px){
+.tasks,.stats{grid-template-columns:1fr}
+.container{padding:12px}
+}
+</style>
+</head>
+<body>
+
+<header>
+<h2>FUTURE BD</h2>
+<p>Learn • Complete Tasks • Earn Rewards</p>
+</header>
+
+<section class="auth card" id="auth">
+<h2 id="authTitle">Create Account</h2>
+<input id="email" type="email" placeholder="Email address">
+<input id="password" type="password" placeholder="Password (minimum 6 characters)">
+<button id="authButton" style="width:100%">Sign Up</button>
+<p id="switch" style="color:#1765ce;cursor:pointer">
+Already have an account? Login
+</p>
+<p id="message"></p>
+</section>
+
+<main class="container" id="dashboard">
+
+<h2>Welcome to Future BD!</h2>
+<p class="small" id="userEmail"></p>
+
+<nav>
+<button onclick="showSection('home')">Dashboard</button>
+<button onclick="showSection('tasks')">Tasks</button>
+<button onclick="showSection('history')">History</button>
+<button onclick="showSection('profile')">Profile</button>
+</nav>
+
+<section id="home">
+<div class="card balance">
+<p>My Available Points</p>
+<h1 id="points">0</h1>
+<p>Demo points only — no cash value</p>
+</div>
+
+<div class="stats">
+<div class="stat">
+<p>Total Completed</p>
+<h2 id="totalTasks">0</h2>
+</div>
+<div class="stat">
+<p>Account Status</p>
+<h2>Active</h2>
+</div>
+</div>
+
+<div class="card">
+<h3>Welcome to Future BD</h3>
+<p>Explore available activities and collect demo points.</p>
+<button onclick="showSection('tasks')">Explore Tasks</button>
+</div>
+</section>
+
+<section id="tasks" style="display:none">
+<h2>Available Tasks</h2>
+<div class="tasks" id="taskList"></div>
+</section>
+
+<section id="history" style="display:none">
+<h2>Task History</h2>
+<div class="card" id="historyList">No tasks completed yet.</div>
+</section>
+
+<section id="profile" style="display:none">
+<div class="card">
+<h2>My Profile</h2>
+<p id="profileEmail"></p>
+<p>Platform: Future BD</p>
+<p>Account: Firebase authenticated</p>
+<button onclick="logout()">Logout</button>
+</div>
+</section>
+
+</main>
+
+<script type="module">
+import {initializeApp}
+from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+
+import {
+getAuth,createUserWithEmailAndPassword,
+signInWithEmailAndPassword,
+signOut,onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+
+// KEEP YOUR OWN FIREBASE CONFIG HERE
+const firebaseConfig = {
+apiKey: "YOUR_API_KEY",
+authDomain: "YOUR_PROJECT.firebaseapp.com",
+projectId: "YOUR_PROJECT_ID",
+appId: "YOUR_APP_ID"
+};
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+
+let signup=true;
+let currentUser=null;
+let points=0;
+let history=[];
+
+const tasks=[
+{id:"daily",name:"Daily Learning",description:"Complete a learning activity",reward:10},
+{id:"visit",name:"Website Visit",description:"Explore a learning website",reward:10},
+{id:"youtube",name:"Educational Video",description:"Explore an educational video",reward:10},
+{id:"custom",name:"Custom Activity",description:"Complete a sample activity",reward:10}
+];
+
+function storageKey(){
+return "futurebd_demo_"+currentUser.uid;
+}
+
+function loadData(){
+try{
+const data=JSON.parse(localStorage.getItem(storageKey())||"{}");
+points=Number(data.points)||0;
+history=Array.isArray(data.history)?data.history:[];
+}catch{
+points=0;
+history=[];
+}
+}
+
+function saveData(){
+localStorage.setItem(storageKey(),JSON.stringify({points,history}));
+}
+
+function updateUI(){
+document.getElementById("points").textContent=points;
+document.getElementById("totalTasks").textContent=history.length;
+document.getElementById("userEmail").textContent=currentUser.email;
+document.getElementById("profileEmail").textContent="Email: "+currentUser.email;
+
+document.getElementById("historyList").innerHTML=
+history.length?history.map(item=>
+`<div class="history"><b>${item.name}</b>
+<p class="small">${item.date} · +${item.reward} demo points</p></div>`
+).join(""):"No tasks completed yet.";
+
+renderTasks();
+}
+
+function renderTasks(){
+document.getElementById("taskList").innerHTML=tasks.map(task=>{
+const done=history.some(x=>x.id===task.id);
+return `<div class="task">
+<h3>${task.name}</h3>
+<p>${task.description}</p>
+<p>Reward: ${task.reward} Demo Points</p>
+<button ${done?"disabled":""} data-task="${task.id}">
+${done?"Completed":"Complete Demo"}
+</button>
+</div>`;
+}).join("");
+
+document.querySelectorAll("[data-task]").forEach(button=>{
+button.addEventListener("click",()=>completeTask(button.dataset.task));
+});
+}
+
+function completeTask(id){
+const task=tasks.find(x=>x.id===id);
+if(!task)return;
+if(history.some(x=>x.id===id))return;
+
+points+=task.reward;
+history.unshift({
+id:task.id,
+name:task.name,
+reward:task.reward,
+date:new Date().toLocaleString()
+});
+saveData();
+updateUI();
+alert("Demo activity completed! +"+task.reward+" points");
+}
+
+window.showSection=(name)=>{
+["home","tasks","history","profile"].forEach(id=>{
+document.getElementById(id).style.display=
+id===name?"block":"none";
+});
+};
+
+document.getElementById("switch").onclick=()=>{
+signup=!signup;
+document.getElementById("authTitle").textContent=
+signup?"Create Account":"Login";
+document.getElementById("authButton").textContent=
+signup?"Sign Up":"Login";
+document.getElementById("switch").textContent=
+signup?"Already have an account? Login":"New user? Create Account";
+document.getElementById("message").textContent="";
+};
+
+document.getElementById("authButton").onclick=async()=>{
+const email=document.getElementById("email").value.trim();
+const password=document.getElementById("password").value;
+const msg=document.getElementById("message");
+
+try{
+if(!email||!password)throw new Error("Enter email and password");
+if(signup){
+await createUserWithEmailAndPassword(auth,email,password);
+}else{
+await signInWithEmailAndPassword(auth,email,password);
+}
+}catch(error){
+msg.textContent=error.message;
+}
+};
+
+window.logout=()=>signOut(auth);
+
+onAuthStateChanged(auth,user=>{
+currentUser=user;
+document.getElementById("auth").style.display=user?"none":"block";
+document.getElementById("dashboard").style.display=user?"block":"none";
+if(user){
+loadData();
+updateUI();
+showSection("home");
+}
+});
+</script>
+</body>
+  </html>
+  
