@@ -1,0 +1,157 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Future BD - Earn Rewards</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f2f5fa;
+      color: #172554;
+    }
+    header {
+      background: #123b8b;
+      color: white;
+      padding: 22px;
+      text-align: center;
+    }
+    header h1 { margin: 0; }
+    nav {
+      background: white;
+      padding: 14px;
+      text-align: center;
+    }
+    nav a {
+      margin: 8px;
+      color: #123b8b;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .container {
+      max-width: 850px;
+      margin: 25px auto;
+      padding: 15px;
+    }
+    .balance {
+      background: linear-gradient(120deg,#123b8b,#2879df);
+      color: white;
+      padding: 25px;
+      border-radius: 16px;
+    }
+    .balance h2 { margin: 0 0 12px; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2,1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .card {
+      background: white;
+      padding: 22px;
+      border-radius: 13px;
+      box-shadow: 0 3px 12px #0000000c;
+    }
+    button {
+      background: #1765ce;
+      color: white;
+      border: 0;
+      padding: 12px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    footer {
+      text-align: center;
+      padding: 25px;
+      color: #64748b;
+    }
+    @media(max-width:500px) {
+      .cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>FUTURE BD</h1>
+  <p>Complete Tasks • Earn Rewards</p>
+</header>
+
+<nav>
+  <a href="#home">Home</a>
+  <a href="#tasks">Tasks</a>
+  <a href="#balance">Balance</a>
+</nav>
+
+<main class="container" id="home">
+  <section class="balance" id="balance">
+    <h2>My Balance</h2>
+    <h1 id="points">0 Points</h1>
+    <p>Demo reward points only</p>
+  </section>
+
+  <section class="cards" id="tasks">
+    <div class="card">
+      <h3>Daily Task</h3>
+      <p>Complete daily activities.</p>
+      <button onclick="completeTask('daily')">
+        Complete Demo
+      </button>
+    </div>
+
+    <div class="card">
+      <h3>Website Visit</h3>
+      <p>Explore websites and learn.</p>
+      <button onclick="completeTask('visit')">
+        Complete Demo
+      </button>
+    </div>
+
+    <div class="card">
+      <h3>YouTube Task</h3>
+      <p>Explore educational videos.</p>
+      <button onclick="completeTask('youtube')">
+        Complete Demo
+      </button>
+    </div>
+
+    <div class="card">
+      <h3>Custom Task</h3>
+      <p>Admin-created activities.</p>
+      <button onclick="completeTask('custom')">
+        Complete Demo
+      </button>
+    </div>
+  </section>
+</main>
+
+<footer>
+  © 2026 Future BD | Demo Website
+</footer>
+
+<script>
+  let points = 0;
+  const completed = new Set();
+
+  function completeTask(task) {
+    if (completed.has(task)) {
+      alert("You already completed this demo task!");
+      return;
+    }
+
+    completed.add(task);
+    points += 10;
+
+    document.getElementById("points").textContent =
+      points + " Points";
+
+    alert("Demo task completed! +10 Points");
+  }
+</script>
+
+</body>
+  </html>
+  
