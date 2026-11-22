@@ -1,0 +1,106 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Future BD</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#f1f5fb;color:#172554}
+header{background:#123b8b;color:white;text-align:center;padding:24px}
+main{max-width:420px;margin:35px auto;padding:18px}
+.card{background:white;padding:24px;border-radius:15px;box-shadow:0 4px 20px #0001}
+input{width:100%;padding:13px;margin:10px 0;border:1px solid #ccc;border-radius:8px}
+button{width:100%;padding:13px;background:#1765ce;color:white;border:0;border-radius:8px;margin-top:10px}
+.toggle{text-align:center;color:#1765ce;cursor:pointer}
+#dashboard{display:none}
+</style>
+</head>
+<body>
+<header>
+<h1>FUTURE BD</h1>
+<p>Complete Tasks • Earn Rewards</p>
+</header>
+
+<main>
+<section class="card" id="auth">
+<h2 id="heading">Create Account</h2>
+<input id="email" type="email" placeholder="Email address">
+<input id="password" type="password" placeholder="Password">
+<button id="action">Sign Up</button>
+<p class="toggle" id="switch">Already have an account? Login</p>
+<p id="message"></p>
+</section>
+
+<section class="card" id="dashboard">
+<h2>Welcome to Future BD</h2>
+<p id="userEmail"></p>
+<h3>My Balance: 0 Demo Points</h3>
+<button id="logout">Logout</button>
+</section>
+</main>
+
+<script type="module">
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+
+import {
+getAuth, createUserWithEmailAndPassword,
+signInWithEmailAndPassword, signOut,
+onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+
+// Replace with your Firebase configuration
+const firebaseConfig = {
+apiKey: "AIzaSyAxPcVdeZm9qt38dB_V9ZCuAytizC-AQl8",
+authDomain: "YOUR_PROJECT.firebaseapp.com",
+projectId: "future-bd1",
+appId: "1:281934222989:web:a4c63aa85000c7abadf4c4"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+let signup = true;
+
+const heading = document.getElementById("heading");
+const action = document.getElementById("action");
+const message = document.getElementById("message");
+
+document.getElementById("switch").onclick = () => {
+signup = !signup;
+heading.textContent = signup ? "Create Account" : "Login";
+action.textContent = signup ? "Sign Up" : "Login";
+document.getElementById("switch").textContent =
+signup ? "Already have an account? Login" :
+"New user? Create Account";
+message.textContent = "";
+};
+
+action.onclick = async () => {
+const email = document.getElementById("email").value.trim();
+const password = document.getElementById("password").value;
+
+try {
+if(signup) {
+await createUserWithEmailAndPassword(auth,email,password);
+} else {
+await signInWithEmailAndPassword(auth,email,password);
+}
+message.textContent = "Success!";
+} catch(error) {
+message.textContent = error.message;
+}
+};
+
+document.getElementById("logout").onclick = () => signOut(auth);
+
+onAuthStateChanged(auth,user => {
+document.getElementById("auth").style.display = user ? "none" : "block";
+document.getElementById("dashboard").style.display = user ? "block" : "none";
+if(user) document.getElementById("userEmail").textContent = user.email;
+});
+</script>
+</body>
+</html>
